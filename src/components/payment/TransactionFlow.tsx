@@ -164,9 +164,8 @@ export const TransactionFlow = ({
             });
 
             // Set appropriate step based on status and ACTUAL role
-            if (data.status === 'payment_pending' && actualIsBuyer) {
-              setStep('payment');
-            } else if ((data.status === 'paid' || data.status === 'work_in_progress') && actualIsSeller) {
+            // Note: For payment_pending, we DON'T auto-skip - always ask for UPI fresh
+            if ((data.status === 'paid' || data.status === 'work_in_progress') && actualIsSeller) {
               setStep('work'); // Seller should see work upload interface
               console.log('Setting step to work for seller');
             } else if (data.status === 'work_submitted' && actualIsBuyer) {
@@ -176,6 +175,7 @@ export const TransactionFlow = ({
             } else if (data.status === 'paid' && actualIsBuyer) {
               // Buyer waiting for work - don't set step, let waiting state show
             }
+            // For payment_pending: stays on 'initiate' step (default) so user enters UPI fresh
           }
         } catch (err) {
           // Table doesn't exist, that's okay
@@ -186,8 +186,36 @@ export const TransactionFlow = ({
     }
   }, [postId, user, isBuyer, isSeller, sellerId, buyerId]);
 
+  // Check if seller has setup payout UPI
+  useEffect(() => {
+    if (isSeller && user) {
+      const checkPayoutDetails = async () => {
+        try {
+          const { data, error } = await supabase
+            .from('profiles')
+            .select('upi_id')
+            .eq('user_id', user.id)
+            .maybeSingle();
+
+          if (!error && !data?.upi_id) {
+            toast({
+              title: "Payout Details Missing",
+              description: "You haven't set up your UPI ID for payouts yet. Please make sure to add it to your profile.",
+              variant: 'default', // Changed to default as destructive might be too aggressive if they can't edit it here
+              duration: 6000,
+            });
+          }
+        } catch (e) {
+          // Ignore errors
+        }
+      };
+      checkPayoutDetails();
+    }
+  }, [isSeller, user]);
+
   // Initialize transaction
   const initiateTransaction = async () => {
+    // Verify user is logged in
     if (!user) {
       toast({
         title: 'Error',
@@ -197,10 +225,11 @@ export const TransactionFlow = ({
       return;
     }
 
+    // Validate UPI ID
     if (!upiId || !upiId.includes('@')) {
       toast({
         title: 'Invalid UPI ID',
-        description: 'Please enter a valid UPI ID (e.g., name@paytm)',
+        description: 'Please enter a valid UPI ID (e.g., name@upi)',
         variant: 'destructive',
       });
       return;
@@ -226,28 +255,10 @@ export const TransactionFlow = ({
         const timestamp = new Date().toISOString().slice(0, 10).replace(/-/g, '');
         const randomNum = Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
         txnData = `TXN${timestamp}-${randomNum}`;
-
-        // Try to verify uniqueness if transactions table exists
-        try {
-          const { data: existing } = await supabase
-            .from('transactions')
-            .select('id')
-            .eq('transaction_id', txnData)
-            .maybeSingle();
-
-          if (existing) {
-            // Retry with new random number
-            const retryNum = Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
-            txnData = `TXN${timestamp}-${retryNum}`;
-          }
-        } catch (e) {
-          // Table doesn't exist, that's okay - we'll still generate the ID
-          console.warn('Transactions table may not exist yet:', e);
-        }
       }
 
-      // Create UPI payment string
-      const upiPaymentString = `upi://pay?pa=${upiId}&am=${amount}&cu=INR&tn=SVIP-${txnData}`;
+      // Create UPI payment string for Seller
+      const upiPaymentString = `upi://pay?pa=${upiId}&pn=SVIP Payment&am=${amount}&cu=INR&tn=SVIP-${txnData}`;
 
       // Generate QR code
       const qrDataUrl = await QRCode.toDataURL(upiPaymentString, {
@@ -595,22 +606,20 @@ export const TransactionFlow = ({
                     <Label htmlFor="amount">Amount (₹)</Label>
                     <Input id="amount" type="number" value={amount} disabled />
                   </div>
+
                   <div className="space-y-2">
-                    <Label htmlFor="upi">Seller UPI ID *</Label>
+                    <Label htmlFor="upi">Seller's UPI ID *</Label>
                     <Input
                       id="upi"
-                      type="text"
-                      placeholder="Ask seller for their UPI ID (e.g., name@paytm)"
+                      placeholder="e.g., name@upi, 9876543210@paytm"
                       value={upiId}
                       onChange={(e) => setUpiId(e.target.value)}
                     />
-                    <div className="p-3 bg-blue-50 dark:bg-blue-950 rounded-lg">
-                      <p className="text-xs text-blue-700 dark:text-blue-300">
-                        <strong>Note:</strong> The seller should provide you with their UPI ID or QR code.
-                        Enter it here to generate a secure payment transaction.
-                      </p>
-                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Enter the UPI ID of the person you're paying. Payment will go directly to them.
+                    </p>
                   </div>
+
                   {workDescription && (
                     <div className="space-y-2">
                       <Label>Work Description</Label>
@@ -618,14 +627,14 @@ export const TransactionFlow = ({
                     </div>
                   )}
                   <div className="flex gap-2">
-                    <Button onClick={initiateTransaction} disabled={isLoading} className="flex-1">
+                    <Button onClick={initiateTransaction} disabled={isLoading || !upiId} className="flex-1">
                       {isLoading ? (
                         <>
                           <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                           Creating...
                         </>
                       ) : (
-                        'Create Secure Transaction'
+                        'Create Transaction'
                       )}
                     </Button>
                     {onCancel && (
@@ -668,6 +677,24 @@ export const TransactionFlow = ({
                   exit={{ opacity: 0, y: -20 }}
                   className="space-y-4"
                 >
+                  {/* Prominent reset option */}
+                  <div className="flex justify-end">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setTransaction(null);
+                        setStep('initiate');
+                        setUpiId('');
+                        setPaymentProof(null);
+                        setQrCodeUrl('');
+                      }}
+                    >
+                      <X className="w-4 h-4 mr-1" />
+                      Start New
+                    </Button>
+                  </div>
+
                   <div className="text-center space-y-2">
                     <h3 className="text-lg font-semibold">Scan QR Code to Pay</h3>
                     <p className="text-sm text-muted-foreground">
@@ -688,7 +715,7 @@ export const TransactionFlow = ({
                       </div>
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">UPI ID:</span>
-                        <span>{upiId}</span>
+                        <span>{transaction.upi_id}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">Transaction ID:</span>
@@ -736,6 +763,21 @@ export const TransactionFlow = ({
                       Your payment is held in escrow. It will only be released after you approve the work.
                     </p>
                   </div>
+
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setTransaction(null);
+                      setStep('initiate');
+                      setUpiId('');
+                      setPaymentProof(null);
+                      setQrCodeUrl('');
+                    }}
+                    className="w-full text-muted-foreground"
+                  >
+                    Cancel & Start New Transaction
+                  </Button>
                 </motion.div>
               )}
 
@@ -1204,8 +1246,8 @@ export const TransactionFlow = ({
                 <h3 className="text-2xl font-semibold">Transaction Complete!</h3>
                 <p className="text-muted-foreground">
                   {isBuyer
-                    ? 'Payment has been successfully released to the helper.'
-                    : 'Payment has been successfully released to you!'}
+                    ? 'Payment has been released. The seller will receive it in their registered UPI account.'
+                    : 'Payment has been released! Funds will be transferred to your registered UPI account.'}
                 </p>
                 <div className="p-4 bg-muted rounded-lg">
                   <p className="text-sm font-mono">{transaction.transaction_id}</p>
@@ -1218,7 +1260,6 @@ export const TransactionFlow = ({
                       onClick={() => {
                         setTransaction(null);
                         setStep('initiate');
-                        setUpiId('');
                         setPaymentProof(null);
                         setQrCodeUrl('');
                       }}

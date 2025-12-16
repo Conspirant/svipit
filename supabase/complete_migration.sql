@@ -29,6 +29,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   avatar_url TEXT,
   trust_score INTEGER DEFAULT 0,
   is_verified BOOLEAN DEFAULT false,
+  upi_id TEXT,
   created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
   updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
 );

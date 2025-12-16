@@ -361,10 +361,23 @@ export default function Messages() {
         .limit(1)
         .maybeSingle();
 
-      // If table doesn't exist, error will be set
+      // If table doesn't exist, error will be set - fallback to conversation roles
       if (error && (error.code === 'PGRST116' || error.message?.includes('404'))) {
-        console.log('Transactions table not found - hiding payment buttons');
-        setIsUserBuyer(undefined);
+        console.log('Transactions table not found - using conversation participant roles as fallback');
+        // Fallback to conversation participant roles
+        if (selectedConversation.participant_1 && selectedConversation.participant_2) {
+          if (user.id === selectedConversation.participant_2) {
+            setIsUserBuyer(true); // participant_2 = post owner = BUYER
+            console.log('Fallback: User is participant_2 (post owner) = BUYER');
+          } else if (user.id === selectedConversation.participant_1) {
+            setIsUserBuyer(false); // participant_1 = helper = SELLER
+            console.log('Fallback: User is participant_1 (helper) = SELLER');
+          } else {
+            setIsUserBuyer(undefined);
+          }
+        } else {
+          setIsUserBuyer(undefined);
+        }
         return;
       }
 
@@ -428,7 +441,20 @@ export default function Messages() {
 
     } catch (err) {
       console.warn('Error checking user role:', err);
-      setIsUserBuyer(undefined);
+      // Fallback to conversation participant roles on any error
+      if (selectedConversation.participant_1 && selectedConversation.participant_2) {
+        if (user.id === selectedConversation.participant_2) {
+          setIsUserBuyer(true); // participant_2 = post owner = BUYER
+          console.log('Error fallback: User is participant_2 (post owner) = BUYER');
+        } else if (user.id === selectedConversation.participant_1) {
+          setIsUserBuyer(false); // participant_1 = helper = SELLER
+          console.log('Error fallback: User is participant_1 (helper) = SELLER');
+        } else {
+          setIsUserBuyer(undefined);
+        }
+      } else {
+        setIsUserBuyer(undefined);
+      }
     }
   };
 
