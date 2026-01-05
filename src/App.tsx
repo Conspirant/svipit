@@ -26,15 +26,22 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/profile-setup" element={<ProfileSetup />} />
-            <Route path="/dashboard" element={<Dashboard />} />
+            <Route
+              path="/dashboard"
+              element={
+                <ErrorBoundary>
+                  <Dashboard />
+                </ErrorBoundary>
+              }
+            />
             <Route path="/profile/:userId" element={<Profile />} />
-            <Route 
-              path="/messages" 
+            <Route
+              path="/messages"
               element={
                 <ErrorBoundary>
                   <Messages />
                 </ErrorBoundary>
-              } 
+              }
             />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

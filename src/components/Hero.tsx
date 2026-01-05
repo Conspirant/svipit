@@ -8,7 +8,7 @@ import { AssociationBadge } from "@/components/AssociationBadge";
 
 export const Hero = () => {
   const { user } = useAuth();
-  
+
   const scrollToFeatures = () => {
     document.getElementById("features")?.scrollIntoView({ behavior: "smooth" });
   };
@@ -46,14 +46,14 @@ export const Hero = () => {
         />
         <div className="absolute inset-0 bg-gradient-to-br from-background/50 via-background/40 to-background/50" />
       </div>
-      
+
       {/* Mesh gradient background */}
       <div className="absolute inset-0 gradient-mesh opacity-60" />
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/50 to-background" />
-      
+
       {/* Subtle noise texture */}
       <div className="absolute inset-0 noise opacity-30" />
-      
+
       {/* Animated background elements - simplified on mobile */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <motion.div
@@ -115,7 +115,7 @@ export const Hero = () => {
             </h1>
 
             <p className="text-base sm:text-lg md:text-xl text-muted-foreground mb-8 md:mb-10 max-w-xl mx-auto lg:mx-0 leading-relaxed">
-              Connect locally to exchange skills, favors, or time — 
+              Connect locally to exchange skills, favors, or time —
               verified through your college ID.
             </p>
 
@@ -193,9 +193,7 @@ export const Hero = () => {
                 transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
               >
                 <div className="flex items-center gap-3 lg:gap-4">
-                  <div className="w-12 h-12 lg:w-14 lg:h-14 rounded-2xl bg-gradient-trust flex items-center justify-center shadow-trust">
-                    <Shield className="w-6 h-6 lg:w-7 lg:h-7 text-white" />
-                  </div>
+                  <img src="/logo.png" alt="S.V.I.P Logo" className="w-14 h-14 lg:w-16 lg:h-16 object-contain drop-shadow-lg" />
                   <div>
                     <p className="font-bold text-base lg:text-lg">98%</p>
                     <p className="text-xs text-muted-foreground">Trust Score</p>

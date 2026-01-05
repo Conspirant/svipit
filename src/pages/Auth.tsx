@@ -41,7 +41,7 @@ export default function Auth() {
   const [fullName, setFullName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string; name?: string }>({});
-  
+
   const { signIn, signUp, user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -66,7 +66,7 @@ export default function Auth() {
 
   const validateForm = () => {
     const newErrors: { email?: string; password?: string; name?: string } = {};
-    
+
     const emailResult = emailSchema.safeParse(email);
     if (!emailResult.success) {
       newErrors.email = emailResult.error.errors[0].message;
@@ -90,7 +90,7 @@ export default function Auth() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
 
     setIsLoading(true);
@@ -101,7 +101,7 @@ export default function Auth() {
         if (error) {
           toast({
             title: 'Login failed',
-            description: error.message === 'Invalid login credentials' 
+            description: error.message === 'Invalid login credentials'
               ? 'Invalid email or password. Please try again.'
               : error.message,
             variant: 'destructive',
@@ -115,7 +115,7 @@ export default function Auth() {
       } else {
         const collegeInfo = getCollegeFromEmail(email);
         const { error } = await signUp(email, password, fullName);
-        
+
         if (error) {
           if (error.message?.includes('already registered')) {
             toast({
@@ -139,7 +139,7 @@ export default function Auth() {
               if (newUser) {
                 await supabase
                   .from('profiles')
-                  .update({ 
+                  .update({
                     is_verified: true,
                     college: collegeInfo.name,
                     college_domain: collegeInfo.domain,
@@ -147,7 +147,7 @@ export default function Auth() {
                   .eq('user_id', newUser.id);
               }
             }, 1000);
-            
+
             toast({
               title: '🎓 College Verified!',
               description: `Welcome from ${collegeInfo.name}! Your profile is now verified.`,
@@ -171,21 +171,21 @@ export default function Auth() {
     <div className="min-h-[100dvh] bg-background relative overflow-hidden flex items-center justify-center px-5 py-8">
       {/* Premium background */}
       <div className="absolute inset-0 gradient-mesh" />
-      
+
       {/* Animated orbs - simplified on mobile */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <motion.div
           className="absolute top-1/4 -left-20 w-[300px] md:w-[500px] h-[300px] md:h-[500px] bg-primary/15 rounded-full blur-[80px] md:blur-[100px]"
-          animate={{ 
-            scale: [1, 1.2, 1], 
+          animate={{
+            scale: [1, 1.2, 1],
             opacity: [0.3, 0.5, 0.3],
           }}
           transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
         />
         <motion.div
           className="absolute bottom-1/4 -right-20 w-[350px] md:w-[600px] h-[350px] md:h-[600px] bg-accent/15 rounded-full blur-[80px] md:blur-[120px]"
-          animate={{ 
-            scale: [1.2, 1, 1.2], 
+          animate={{
+            scale: [1.2, 1, 1.2],
             opacity: [0.2, 0.4, 0.2],
           }}
           transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
@@ -200,19 +200,17 @@ export default function Auth() {
       >
         {/* Logo */}
         <Link to="/" className="flex flex-col items-center mb-8 md:mb-10 group">
-          <motion.div 
-            className="w-16 h-16 md:w-20 md:h-20 rounded-2xl md:rounded-3xl bg-gradient-primary flex items-center justify-center shadow-glow mb-4 md:mb-5"
-            whileHover={{ scale: 1.05, rotate: 5 }}
+          <motion.div
+            whileHover={{ scale: 1.05 }}
             transition={{ type: "spring", stiffness: 400, damping: 17 }}
           >
-            <Shield className="w-8 h-8 md:w-10 md:h-10 text-white" />
+            <img src="/logo.png" alt="S.V.I.P Logo" className="w-32 h-32 md:w-40 md:h-40 object-contain drop-shadow-xl mix-blend-multiply" />
           </motion.div>
-          <h1 className="text-3xl md:text-4xl font-display font-bold gradient-text">S.v.i.p</h1>
-          <p className="text-muted-foreground mt-1.5 md:mt-2 text-xs md:text-sm">Student Verified Interconnect Platform</p>
+          <p className="text-muted-foreground mt-1.5 md:mt-2 text-xs md:text-sm">Skill Value Interaction Platform</p>
         </Link>
 
         {/* Auth Card */}
-        <motion.div 
+        <motion.div
           className="glass-strong rounded-2xl md:rounded-3xl p-5 md:p-8 shadow-premium"
           whileHover={{ scale: 1.01 }}
           transition={{ duration: 0.3 }}
@@ -223,11 +221,10 @@ export default function Auth() {
               onClick={() => setIsLogin(true)}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className={`flex-1 py-3 md:py-3.5 rounded-lg md:rounded-xl font-semibold text-sm transition-all duration-300 ${
-                isLogin 
-                  ? 'bg-card shadow-elegant text-foreground' 
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
+              className={`flex-1 py-3 md:py-3.5 rounded-lg md:rounded-xl font-semibold text-sm transition-all duration-300 ${isLogin
+                ? 'bg-card shadow-elegant text-foreground'
+                : 'text-muted-foreground hover:text-foreground'
+                }`}
             >
               Log In
             </motion.button>
@@ -235,11 +232,10 @@ export default function Auth() {
               onClick={() => setIsLogin(false)}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className={`flex-1 py-3 md:py-3.5 rounded-lg md:rounded-xl font-semibold text-sm transition-all duration-300 ${
-                !isLogin 
-                  ? 'bg-card shadow-elegant text-foreground' 
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
+              className={`flex-1 py-3 md:py-3.5 rounded-lg md:rounded-xl font-semibold text-sm transition-all duration-300 ${!isLogin
+                ? 'bg-card shadow-elegant text-foreground'
+                : 'text-muted-foreground hover:text-foreground'
+                }`}
             >
               Sign Up
             </motion.button>
@@ -291,7 +287,7 @@ export default function Auth() {
               {errors.email && (
                 <p className="text-sm text-destructive">{errors.email}</p>
               )}
-              
+
               <AnimatePresence mode="wait">
                 {!isLogin && email && detectedCollege && (
                   <motion.div
@@ -309,7 +305,7 @@ export default function Auth() {
                   </motion.div>
                 )}
                 {!isLogin && email && !detectedCollege && email.includes('@') && (
-                  <motion.p 
+                  <motion.p
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
@@ -373,7 +369,7 @@ export default function Auth() {
           </p>
         </motion.div>
 
-        <motion.p 
+        <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5 }}

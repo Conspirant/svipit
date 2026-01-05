@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Navbar } from '@/components/Navbar';
 import { PostCard } from '@/components/dashboard/PostCard';
 import { CreatePostModal } from '@/components/dashboard/CreatePostModal';
+import { AcademicIntegrityModal } from '@/components/dashboard/AcademicIntegrityModal';
 import { TopHelpers } from '@/components/dashboard/TopHelpers';
 import { QuickStats } from '@/components/dashboard/QuickStats';
 import { useAuth } from '@/hooks/useAuth';
@@ -42,6 +43,7 @@ export default function Dashboard() {
   const [filterType, setFilterType] = useState<FilterType>('all');
   const [postType, setPostType] = useState<PostType>('all');
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showIntegrityModal, setShowIntegrityModal] = useState(false);
   const [userProfile, setUserProfile] = useState<any>(null);
   const [myPostsWithMessages, setMyPostsWithMessages] = useState<Set<string>>(new Set());
 
@@ -49,21 +51,28 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  // Removed forced redirect to allow user to access dashboard
+  // useEffect(() => {
+  //   if (!loading && !user) {
+  //     navigate('/auth');
+  //   } else if (!loading && user && !isProfileComplete) {
+  //     navigate('/profile-setup');
+  //   }
+  // }, [user, loading, isProfileComplete, navigate]);
+
   useEffect(() => {
     if (!loading && !user) {
       navigate('/auth');
-    } else if (!loading && user && !isProfileComplete) {
-      navigate('/profile-setup');
     }
-  }, [user, loading, isProfileComplete, navigate]);
+  }, [user, loading, navigate]);
 
   useEffect(() => {
-    if (user && isProfileComplete) {
+    if (user) {
       fetchPosts();
       fetchUserProfile();
       fetchMyPostsWithApproaches();
     }
-  }, [user, filterType, postType, isProfileComplete]);
+  }, [user, filterType, postType]);
 
   const fetchUserProfile = async () => {
     if (!user) return;
@@ -165,12 +174,12 @@ export default function Dashboard() {
 
   useEffect(() => {
     const delaySearch = setTimeout(() => {
-      if (user && isProfileComplete) fetchPosts();
+      if (user) fetchPosts();
     }, 300);
     return () => clearTimeout(delaySearch);
   }, [searchQuery]);
 
-  if (loading || !isProfileComplete) {
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <motion.div
@@ -200,6 +209,28 @@ export default function Dashboard() {
             <p className="text-muted-foreground text-sm md:text-lg">Find someone who gets it.</p>
           </motion.div>
 
+          {/* Incomplete Profile Warning */}
+          {!isProfileComplete && (
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-8 p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center gap-3"
+            >
+              <div className="w-10 h-10 rounded-full bg-amber-500/20 flex items-center justify-center shrink-0">
+                <Zap className="w-5 h-5 text-amber-500" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold text-amber-700 dark:text-amber-400">Complete your profile</h3>
+                <p className="text-sm text-muted-foreground">
+                  You need to complete your profile to unlock all features.
+                  <Button variant="link" className="px-1.5 h-auto text-amber-600 dark:text-amber-400 font-semibold" onClick={() => navigate('/profile-setup')}>
+                    Complete Now
+                  </Button>
+                </p>
+              </div>
+            </motion.div>
+          )}
+
           <div className="grid lg:grid-cols-4 gap-5 lg:gap-8">
             {/* Main Content */}
             <div className="lg:col-span-3 space-y-6">
@@ -226,7 +257,7 @@ export default function Dashboard() {
                   >
                     <Button
                       variant="hero"
-                      onClick={() => setShowCreateModal(true)}
+                      onClick={() => setShowIntegrityModal(true)}
                       className="h-12 gap-2"
                     >
                       <Plus className="w-5 h-5 transition-transform duration-300 group-hover:rotate-90" />
@@ -333,7 +364,7 @@ export default function Dashboard() {
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                       >
-                        <Button variant="hero" size="lg" onClick={() => setShowCreateModal(true)} className="gap-2">
+                        <Button variant="hero" size="lg" onClick={() => setShowIntegrityModal(true)} className="gap-2">
                           <Plus className="w-5 h-5" />
                           Create Your First Post
                         </Button>
@@ -437,6 +468,15 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
+
+      <AcademicIntegrityModal
+        open={showIntegrityModal}
+        onOpenChange={setShowIntegrityModal}
+        onAccept={() => {
+          setShowIntegrityModal(false);
+          setShowCreateModal(true);
+        }}
+      />
 
       <CreatePostModal
         open={showCreateModal}

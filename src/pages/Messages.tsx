@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, ArrowLeft, GraduationCap, Check, Shield, MessageCircle, Star, Search, IndianRupee, AlertCircle } from 'lucide-react';
+import { Send, ArrowLeft, GraduationCap, Check, Shield, MessageCircle, Star, Search, IndianRupee, AlertCircle, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -64,7 +64,8 @@ export default function Messages() {
   const [isBlocked, setIsBlocked] = useState(false);
   const [lastMessageTime, setLastMessageTime] = useState<number | null>(null);
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
-  const [paymentAmount, setPaymentAmount] = useState<number>(0);
+  const [paymentAmount, setPaymentAmount] = useState<number>(0); // Draft amount in dialog
+  const [confirmedAmount, setConfirmedAmount] = useState<number>(0); // Final amount for transaction
   const [messageWarning, setMessageWarning] = useState<string | null>(null);
   const [isUserBuyer, setIsUserBuyer] = useState<boolean | null | undefined>(undefined); // undefined = unknown (don't show), true = buyer, false = seller, null = not checked yet
 
@@ -593,6 +594,73 @@ export default function Messages() {
     }
   };
 
+  // Delete a single message
+  const handleDeleteMessage = async (messageId: string) => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from('messages')
+        .delete()
+        .eq('id', messageId)
+        .eq('sender_id', user.id); // Only delete own messages
+
+      if (error) throw error;
+
+      setMessages(prev => prev.filter(m => m.id !== messageId));
+
+      toast({
+        title: 'Message Deleted',
+        description: 'Your message has been removed.',
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to delete message',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  // Delete entire conversation
+  const handleDeleteConversation = async () => {
+    if (!selectedConversation || !user) return;
+
+    try {
+      // First delete all messages in the conversation
+      const { error: messagesError } = await supabase
+        .from('messages')
+        .delete()
+        .eq('conversation_id', selectedConversation.id);
+
+      if (messagesError) throw messagesError;
+
+      // Then delete the conversation itself
+      const { error: conversationError } = await supabase
+        .from('conversations')
+        .delete()
+        .eq('id', selectedConversation.id);
+
+      if (conversationError) throw conversationError;
+
+      // Update local state
+      setConversations(prev => prev.filter(c => c.id !== selectedConversation.id));
+      setSelectedConversation(null);
+      setMessages([]);
+
+      toast({
+        title: 'Conversation Deleted',
+        description: 'The conversation and all messages have been removed.',
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to delete conversation',
+        variant: 'destructive',
+      });
+    }
+  };
+
   const filteredConversations = conversations.filter(c =>
     !searchQuery || c.other_user?.full_name?.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -787,6 +855,21 @@ export default function Messages() {
                       {/* Only show if user explicitly wants to initiate (they can use a different method) */}
                     </>
                   )}
+
+                  {/* Delete Conversation Button */}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 shrink-0"
+                    onClick={() => {
+                      if (window.confirm('Are you sure you want to delete this conversation? This cannot be undone.')) {
+                        handleDeleteConversation();
+                      }
+                    }}
+                    title="Delete conversation"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </Button>
                 </div>
 
                 {/* Blocked User Warning */}
@@ -850,6 +933,7 @@ export default function Messages() {
                         setIsBlocked(true);
                         fetchConversations();
                       }}
+                      onDelete={handleDeleteMessage}
                     />
                   ))}
                 </AnimatePresence>
@@ -959,8 +1043,8 @@ export default function Messages() {
             <Button
               onClick={() => {
                 if (paymentAmount > 0 && selectedConversation?.other_user) {
+                  setConfirmedAmount(paymentAmount);
                   setShowPaymentDialog(false);
-                  // TransactionButton will handle the rest
                 } else {
                   toast({
                     title: 'Invalid Amount',
@@ -978,14 +1062,15 @@ export default function Messages() {
       </Dialog>
 
       {/* Transaction Flow (shown when amount is set) - Only for Card Poster (Buyer) */}
-      {paymentAmount > 0 && selectedConversation?.other_user && user && isUserBuyer !== false && (
+      {confirmedAmount > 0 && selectedConversation?.other_user && user && isUserBuyer !== false && (
         <TransactionButton
           sellerId={selectedConversation.other_user.user_id}
           sellerName={selectedConversation.other_user.full_name || 'User'}
           buyerId={user.id} // Current user is the buyer (card poster) when they initiate payment
-          amount={paymentAmount}
-          onComplete={() => {
+          amount={confirmedAmount}
+          onComplete={(transactionId) => {
             setPaymentAmount(0);
+            setConfirmedAmount(0);
             setIsUserBuyer(true); // Confirm user is buyer after transaction
             toast({
               title: 'Transaction Complete',

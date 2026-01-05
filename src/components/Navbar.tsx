@@ -36,17 +36,15 @@ export const Navbar = () => {
     <nav className="fixed top-0 left-0 right-0 z-50">
       <div className="glass-strong border-b border-border/30 backdrop-blur-xl">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-18">
+          <div className="flex items-center justify-between h-16">
             {/* Logo */}
-            <Link to={user ? "/dashboard" : "/"} className="flex items-center gap-3 group">
-              <motion.div 
-                whileHover={{ scale: 1.05, rotate: 5 }}
+            <Link to={user ? "/dashboard" : "/"} className="flex items-center gap-2 group">
+              <motion.div
+                whileHover={{ scale: 1.05 }}
                 transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                className="w-10 h-10 rounded-2xl bg-gradient-primary flex items-center justify-center shadow-glow"
               >
-                <Shield className="w-5 h-5 text-white" />
+                <img src="/logo.png" alt="S.V.I.P Logo" className="w-10 h-10 md:w-12 md:h-12 object-contain drop-shadow-lg mix-blend-multiply" />
               </motion.div>
-              <span className="text-xl font-display font-bold gradient-text">S.v.i.p</span>
             </Link>
 
             {/* Desktop Nav */}
@@ -55,13 +53,12 @@ export const Navbar = () => {
                 <>
                   {navItems.map(({ path, icon: Icon, label }) => (
                     <Link key={path} to={path} className="relative">
-                      <Button 
+                      <Button
                         variant={isActive(path) ? "default" : "ghost"}
-                        className={`gap-2 rounded-xl transition-all duration-300 ${
-                          isActive(path) 
-                            ? 'bg-primary text-primary-foreground shadow-md' 
-                            : 'hover:bg-secondary/50'
-                        }`}
+                        className={`gap-2 rounded-xl transition-all duration-300 ${isActive(path)
+                          ? 'bg-primary text-primary-foreground shadow-md'
+                          : 'hover:bg-secondary/50'
+                          }`}
                       >
                         <Icon className="w-4 h-4 transition-transform duration-300 group-hover:scale-110" />
                         {label}
@@ -75,10 +72,10 @@ export const Navbar = () => {
                       )}
                     </Link>
                   ))}
-                  
+
                   {/* Trust Score Badge */}
                   {profile && (
-                    <motion.div 
+                    <motion.div
                       whileHover={{ scale: 1.05 }}
                       className="mx-3 px-4 py-2 rounded-xl bg-gradient-trust/10 border border-trust/20 flex items-center gap-2 cursor-default"
                     >
@@ -87,7 +84,7 @@ export const Navbar = () => {
                     </motion.div>
                   )}
 
-                  <Button 
+                  <Button
                     variant={isActive(`/profile/${user.id}`) ? "trust" : "ghost"}
                     onClick={handleProfileClick}
                     className="gap-2 rounded-xl ml-1"
@@ -104,7 +101,7 @@ export const Navbar = () => {
                     </div>
                     <span className="max-w-[100px] truncate font-medium">{profile?.full_name || 'Profile'}</span>
                   </Button>
-                  
+
                   <Button variant="ghost" size="icon" onClick={handleSignOut} className="text-muted-foreground hover:text-destructive ml-1 rounded-xl">
                     <LogOut className="w-5 h-5" />
                   </Button>
@@ -122,9 +119,9 @@ export const Navbar = () => {
             </div>
 
             {/* Mobile Menu Toggle */}
-            <Button 
-              variant="ghost" 
-              size="icon" 
+            <Button
+              variant="ghost"
+              size="icon"
               className="md:hidden rounded-xl"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
@@ -169,12 +166,12 @@ export const Navbar = () => {
                   </div>
 
                   {navItems.map(({ path, icon: Icon, label }) => (
-                    <Link 
-                      key={path} 
+                    <Link
+                      key={path}
                       to={path}
                       onClick={() => setMobileMenuOpen(false)}
                     >
-                      <Button 
+                      <Button
                         variant={isActive(path) ? "default" : "ghost"}
                         className={`w-full justify-start gap-3 h-13 rounded-xl text-base ${isActive(path) ? '' : ''}`}
                       >
@@ -183,8 +180,8 @@ export const Navbar = () => {
                       </Button>
                     </Link>
                   ))}
-                  
-                  <Button 
+
+                  <Button
                     variant="ghost"
                     onClick={handleProfileClick}
                     className="w-full justify-start gap-3 h-13 rounded-xl text-base"
@@ -194,8 +191,8 @@ export const Navbar = () => {
                   </Button>
 
                   <div className="pt-3 mt-3 border-t border-border/30">
-                    <Button 
-                      variant="ghost" 
+                    <Button
+                      variant="ghost"
                       onClick={handleSignOut}
                       className="w-full justify-start gap-3 h-13 rounded-xl text-base text-destructive hover:text-destructive hover:bg-destructive/10"
                     >

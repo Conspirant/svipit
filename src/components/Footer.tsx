@@ -8,52 +8,50 @@ export const Footer = () => {
       <div className="container mx-auto px-5 sm:px-6 lg:px-8">
         <div className="flex flex-col items-center gap-5 md:gap-6">
           <Link to="/" className="flex items-center gap-2 group">
-            <div className="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-gradient-primary flex items-center justify-center shadow-glow">
-              <Shield className="w-5 h-5 md:w-6 md:h-6 text-white" />
-            </div>
-            <span className="text-xl md:text-2xl font-display font-bold gradient-text">S.v.i.p</span>
+            <img src="/logo.png" alt="S.V.I.P Logo" className="w-14 h-14 md:w-16 md:h-16 object-contain drop-shadow-lg" />
+            <span className="text-xl md:text-2xl font-display font-bold gradient-text">SVIP it</span>
           </Link>
 
           <p className="text-center text-sm md:text-base text-muted-foreground max-w-md px-4">
-            Student Verified Interconnect Platform — Building trust-based communities, 
+            Student Verified Interconnect Platform — Building trust-based communities,
             one campus at a time.
           </p>
 
           <div className="flex flex-wrap justify-center gap-4 md:gap-6 text-sm text-muted-foreground">
-            <motion.a 
-              href="#" 
+            <motion.a
+              href="#"
               className="hover:text-primary transition-colors py-1"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
               About
             </motion.a>
-            <motion.a 
-              href="#" 
+            <motion.a
+              href="#"
               className="hover:text-primary transition-colors py-1"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
               How It Works
             </motion.a>
-            <motion.a 
-              href="#" 
+            <motion.a
+              href="#"
               className="hover:text-primary transition-colors py-1"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
               Privacy
             </motion.a>
-            <motion.a 
-              href="#" 
+            <motion.a
+              href="#"
               className="hover:text-primary transition-colors py-1"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
               Terms
             </motion.a>
-            <motion.a 
-              href="#" 
+            <motion.a
+              href="#"
               className="hover:text-primary transition-colors py-1"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}

@@ -25,9 +25,10 @@ interface MessageBubbleProps {
   isOwnMessage: boolean;
   onReport?: () => void;
   onBlock?: () => void;
+  onDelete?: (messageId: string) => void;
 }
 
-export const MessageBubble = ({ message, isOwnMessage, onReport, onBlock }: MessageBubbleProps) => {
+export const MessageBubble = ({ message, isOwnMessage, onReport, onBlock, onDelete }: MessageBubbleProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [showReportDialog, setShowReportDialog] = useState(false);
@@ -120,7 +121,7 @@ export const MessageBubble = ({ message, isOwnMessage, onReport, onBlock }: Mess
             <div className="mb-1 p-2 bg-amber-500/10 border border-amber-500/20 rounded-lg flex items-center gap-2 text-xs text-amber-700 dark:text-amber-400">
               <AlertTriangle className="w-4 h-4 shrink-0" />
               <span>
-                {message.is_flagged 
+                {message.is_flagged
                   ? `Warning: ${message.flag_reason || 'This message was flagged as suspicious'}`
                   : 'Warning: This message contains suspicious links. Be cautious!'}
               </span>
@@ -128,11 +129,10 @@ export const MessageBubble = ({ message, isOwnMessage, onReport, onBlock }: Mess
           )}
 
           <div
-            className={`p-3.5 rounded-2xl ${
-              isOwnMessage
-                ? 'bg-gradient-trust text-white rounded-br-md shadow-md'
-                : 'bg-card border border-border rounded-bl-md'
-            }`}
+            className={`p-3.5 rounded-2xl ${isOwnMessage
+              ? 'bg-gradient-trust text-white rounded-br-md shadow-md'
+              : 'bg-card border border-border rounded-bl-md'
+              }`}
           >
             {/* Message content with link detection */}
             <div className="break-words">
@@ -145,13 +145,12 @@ export const MessageBubble = ({ message, isOwnMessage, onReport, onBlock }: Mess
                         href={part}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className={`underline ${
-                          isSuspicious
-                            ? 'text-red-500 hover:text-red-600'
-                            : isOwnMessage
+                        className={`underline ${isSuspicious
+                          ? 'text-red-500 hover:text-red-600'
+                          : isOwnMessage
                             ? 'text-white/90 hover:text-white'
                             : 'text-primary hover:text-primary/80'
-                        }`}
+                          }`}
                         onClick={(e) => {
                           if (isSuspicious) {
                             e.preventDefault();
@@ -176,11 +175,10 @@ export const MessageBubble = ({ message, isOwnMessage, onReport, onBlock }: Mess
               })}
             </div>
 
-            <div className={`flex items-center justify-between mt-1.5 text-xs ${
-              isOwnMessage ? 'text-white/70' : 'text-muted-foreground'
-            }`}>
+            <div className={`flex items-center justify-between mt-1.5 text-xs ${isOwnMessage ? 'text-white/70' : 'text-muted-foreground'
+              }`}>
               <span>{formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}</span>
-              
+
               {!isOwnMessage && (
                 <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
                   <Button
@@ -203,6 +201,21 @@ export const MessageBubble = ({ message, isOwnMessage, onReport, onBlock }: Mess
                   </Button>
                 </div>
               )}
+
+              {/* Delete button for own messages */}
+              {isOwnMessage && onDelete && (
+                <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 px-2 text-xs text-destructive hover:text-destructive hover:bg-destructive/10"
+                    onClick={() => onDelete(message.id)}
+                  >
+                    <X className="w-3 h-3 mr-1" />
+                    Delete
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -217,7 +230,7 @@ export const MessageBubble = ({ message, isOwnMessage, onReport, onBlock }: Mess
               Help us keep the community safe by reporting suspicious or inappropriate content.
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="space-y-4">
             <div className="space-y-2">
               <Label>Report Type</Label>

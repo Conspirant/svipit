@@ -19,6 +19,7 @@ const COLLEGES = [
   'Dayananda Sagar College of Engineering',
   'CMR Institute of Technology',
   'NIE Mysore',
+  'Sai Vidya Institute of Technology',
   'Other',
 ];
 
@@ -36,7 +37,7 @@ export default function ProfileSetup() {
   const [skills, setSkills] = useState<string[]>([]);
   const [newSkill, setNewSkill] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  
+
   const { user, loading, refreshProfile, isProfileComplete } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -63,9 +64,9 @@ export default function ProfileSetup() {
 
   const handleSubmit = async () => {
     if (!user) return;
-    
+
     setIsLoading(true);
-    
+
     try {
       const { error } = await supabase
         .from('profiles')
@@ -86,7 +87,7 @@ export default function ProfileSetup() {
         title: 'Profile complete!',
         description: 'Welcome to the S.v.i.p community.',
       });
-      
+
       navigate('/dashboard');
     } catch (error: any) {
       toast({
@@ -143,9 +144,8 @@ export default function ProfileSetup() {
           {[1, 2, 3].map((s) => (
             <div
               key={s}
-              className={`h-1.5 md:h-2 rounded-full transition-all ${
-                s === step ? 'w-8 md:w-10 bg-primary' : s < step ? 'w-8 md:w-10 bg-primary/50' : 'w-2 bg-muted'
-              }`}
+              className={`h-1.5 md:h-2 rounded-full transition-all ${s === step ? 'w-8 md:w-10 bg-primary' : s < step ? 'w-8 md:w-10 bg-primary/50' : 'w-2 bg-muted'
+                }`}
             />
           ))}
         </div>
@@ -173,11 +173,10 @@ export default function ProfileSetup() {
                     <button
                       key={c}
                       onClick={() => setCollege(c)}
-                      className={`p-4 rounded-xl border-2 text-sm font-medium transition-all ${
-                        college === c
+                      className={`p-4 rounded-xl border-2 text-sm font-medium transition-all ${college === c
                           ? 'border-primary bg-primary/10 text-primary'
                           : 'border-border/50 hover:border-primary/50'
-                      }`}
+                        }`}
                     >
                       {c}
                     </button>

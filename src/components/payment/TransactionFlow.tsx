@@ -11,6 +11,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import QRCode from 'qrcode';
 
+// Type assertion helper for tables not yet in generated types
+// TODO: Regenerate Supabase types after running migrations to remove these assertions
+const supabaseAny = supabase as any;
+
 interface TransactionFlowProps {
   postId?: string;
   sellerId: string;
@@ -143,21 +147,22 @@ export const TransactionFlow = ({
           const { data, error } = await query.maybeSingle();
 
           if (!error && data) {
-            setTransaction(data);
+            const txnData = data as any; // Type assertion for untyped table
+            setTransaction(txnData as Transaction);
 
             // IMPORTANT: Re-determine role from transaction data
             // This ensures we have the correct role even if props were wrong
-            const actualIsBuyer = data.buyer_id === user?.id;
-            const actualIsSeller = data.seller_id === user?.id;
+            const actualIsBuyer = txnData.buyer_id === user?.id;
+            const actualIsSeller = txnData.seller_id === user?.id;
 
             // Update actual role state
             setActualRole({ isBuyer: actualIsBuyer, isSeller: actualIsSeller });
 
             console.log('Transaction loaded:', {
-              transactionId: data.transaction_id,
-              status: data.status,
-              buyerId: data.buyer_id,
-              sellerId: data.seller_id,
+              transactionId: txnData.transaction_id,
+              status: txnData.status,
+              buyerId: txnData.buyer_id,
+              sellerId: txnData.seller_id,
               currentUserId: user?.id,
               actualIsBuyer,
               actualIsSeller
@@ -165,14 +170,14 @@ export const TransactionFlow = ({
 
             // Set appropriate step based on status and ACTUAL role
             // Note: For payment_pending, we DON'T auto-skip - always ask for UPI fresh
-            if ((data.status === 'paid' || data.status === 'work_in_progress') && actualIsSeller) {
+            if ((txnData.status === 'paid' || txnData.status === 'work_in_progress') && actualIsSeller) {
               setStep('work'); // Seller should see work upload interface
               console.log('Setting step to work for seller');
-            } else if (data.status === 'work_submitted' && actualIsBuyer) {
+            } else if (txnData.status === 'work_submitted' && actualIsBuyer) {
               setStep('verify');
-            } else if (data.status === 'approved' || data.status === 'released') {
+            } else if (txnData.status === 'approved' || txnData.status === 'released') {
               setStep('complete');
-            } else if (data.status === 'paid' && actualIsBuyer) {
+            } else if (txnData.status === 'paid' && actualIsBuyer) {
               // Buyer waiting for work - don't set step, let waiting state show
             }
             // For payment_pending: stays on 'initiate' step (default) so user enters UPI fresh
@@ -192,8 +197,7 @@ export const TransactionFlow = ({
       const checkPayoutDetails = async () => {
         try {
           const { data, error } = await supabase
-            .from('profiles')
-            .select('upi_id')
+            .from('profiles').select('upi_id' as any)
             .eq('user_id', user.id)
             .maybeSingle();
 
@@ -242,7 +246,7 @@ export const TransactionFlow = ({
       let txnData: string;
 
       try {
-        const { data: dbTxnId, error: txnError } = await supabase.rpc('generate_transaction_id');
+        const { data: dbTxnId, error: txnError } = await supabaseAny.rpc('generate_transaction_id');
 
         if (!txnError && dbTxnId) {
           txnData = dbTxnId;
@@ -386,7 +390,7 @@ export const TransactionFlow = ({
 
         if (uploadError) {
           // If bucket doesn't exist, use data URL instead
-          if (uploadError.message?.includes('Bucket') || uploadError.message?.includes('bucket') || uploadError.statusCode === 400) {
+          if (uploadError.message?.includes('Bucket') || uploadError.message?.includes('bucket') || (uploadError as any).statusCode === 400) {
             console.warn('Storage bucket not found. Using data URL for payment proof.');
             // Convert file to data URL as fallback
             const reader = new FileReader();
@@ -443,7 +447,7 @@ export const TransactionFlow = ({
             throw updateError;
           }
         } else if (updatedTxn) {
-          setTransaction(updatedTxn);
+          setTransaction(updatedTxn as Transaction);
         } else {
           // Fallback to local update
           setTransaction({ ...transaction, status: 'paid', payment_proof_url: publicUrl });
@@ -505,20 +509,21 @@ export const TransactionFlow = ({
         }
 
         if (!error && data) {
-          setTransaction(data);
+          const pollData = data as any; // Type assertion for untyped table
+          setTransaction(pollData as Transaction);
 
           // Update step based on status and role
-          if (data.status === 'paid') {
+          if (pollData.status === 'paid') {
             if (isSeller) {
               setStep('work'); // Seller should see work upload interface
             }
             // Buyer will see waiting state (handled by waiting state component)
-          } else if (data.status === 'work_submitted') {
+          } else if (pollData.status === 'work_submitted') {
             if (isBuyer) {
               setStep('verify'); // Buyer should see review interface
             }
             // Seller will see waiting state (handled by waiting state component)
-          } else if (data.status === 'approved' || data.status === 'released') {
+          } else if (pollData.status === 'approved' || pollData.status === 'released') {
             setStep('complete');
             if (onComplete) onComplete(transaction.id);
           }
@@ -881,7 +886,7 @@ export const TransactionFlow = ({
 
                             if (uploadError) {
                               // If bucket doesn't exist, use data URL
-                              if (uploadError.message?.includes('Bucket') || uploadError.statusCode === 400) {
+                              if (uploadError.message?.includes('Bucket') || (uploadError as any).statusCode === 400) {
                                 const reader = new FileReader();
                                 const dataUrl = await new Promise<string>((resolve, reject) => {
                                   reader.onload = () => resolve(reader.result as string);
@@ -900,7 +905,7 @@ export const TransactionFlow = ({
                             }
                           } catch (fileError: any) {
                             // If storage fails, use data URL
-                            if (fileError.message?.includes('Bucket') || fileError.statusCode === 400) {
+                            if (fileError.message?.includes('Bucket') || (fileError as any).statusCode === 400) {
                               const reader = new FileReader();
                               const dataUrl = await new Promise<string>((resolve, reject) => {
                                 reader.onload = () => resolve(reader.result as string);
@@ -1102,7 +1107,7 @@ export const TransactionFlow = ({
                       try {
                         // Try database function first (correct parameter order)
                         try {
-                          const { error } = await supabase.rpc('approve_work', {
+                          const { error } = await supabaseAny.rpc('approve_work', {
                             transaction_uuid: transaction.id,
                             buyer_feedback: null
                           });
