@@ -254,14 +254,14 @@ export default function Auth() {
                 >
                   <Label htmlFor="name" className="text-sm font-medium">Full Name</Label>
                   <div className="relative">
-                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                     <Input
                       id="name"
                       type="text"
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
                       placeholder="Your full name"
-                      className="pl-12 h-13 rounded-xl border-border/50 bg-secondary/30 focus:bg-card transition-colors"
+                      className="pl-14 h-13 rounded-xl border-border/50 bg-secondary/30 focus:bg-card transition-colors"
                     />
                   </div>
                   {errors.name && (
@@ -274,14 +274,14 @@ export default function Auth() {
             <div className="space-y-2">
               <Label htmlFor="email" className="text-sm font-medium">Email</Label>
               <div className="relative">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <Input
                   id="email"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@college.edu.in"
-                  className="pl-12 h-13 rounded-xl border-border/50 bg-secondary/30 focus:bg-card transition-colors"
+                  className="pl-14 h-13 rounded-xl border-border/50 bg-secondary/30 focus:bg-card transition-colors"
                 />
               </div>
               {errors.email && (
@@ -321,14 +321,14 @@ export default function Auth() {
             <div className="space-y-2">
               <Label htmlFor="password" className="text-sm font-medium">Password</Label>
               <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <Input
                   id="password"
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="pl-12 h-13 rounded-xl border-border/50 bg-secondary/30 focus:bg-card transition-colors"
+                  className="pl-14 h-13 rounded-xl border-border/50 bg-secondary/30 focus:bg-card transition-colors"
                 />
               </div>
               {errors.password && (
