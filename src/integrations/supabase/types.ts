@@ -277,6 +277,7 @@ export type Database = {
           trust_score: number | null
           updated_at: string
           user_id: string
+          upi_id: string | null
         }
         Insert: {
           avatar_url?: string | null
@@ -293,6 +294,7 @@ export type Database = {
           trust_score?: number | null
           updated_at?: string
           user_id: string
+          upi_id?: string | null
         }
         Update: {
           avatar_url?: string | null
@@ -309,8 +311,101 @@ export type Database = {
           trust_score?: number | null
           updated_at?: string
           user_id?: string
+          upi_id?: string | null
         }
         Relationships: []
+      }
+      transactions: {
+        Row: {
+          id: string
+          transaction_id: string
+          buyer_id: string
+          seller_id: string
+          post_id: string | null
+          amount: number
+          currency: string
+          status: string
+          payment_method: string
+          upi_id: string | null
+          upi_qr_data: string | null
+          payment_proof_url: string | null
+          payment_verified_at: string | null
+          work_description: string | null
+          work_files: string[] | null
+          work_preview_url: string | null
+          buyer_approval: boolean
+          buyer_approval_at: string | null
+          buyer_feedback: string | null
+          dispute_reason: string | null
+          dispute_resolved_at: string | null
+          released_at: string | null
+          expires_at: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          transaction_id: string
+          buyer_id: string
+          seller_id: string
+          post_id?: string | null
+          amount: number
+          currency?: string
+          status?: string
+          payment_method?: string
+          upi_id?: string | null
+          upi_qr_data?: string | null
+          payment_proof_url?: string | null
+          payment_verified_at?: string | null
+          work_description?: string | null
+          work_files?: string[] | null
+          work_preview_url?: string | null
+          buyer_approval?: boolean
+          buyer_approval_at?: string | null
+          buyer_feedback?: string | null
+          dispute_reason?: string | null
+          dispute_resolved_at?: string | null
+          released_at?: string | null
+          expires_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          transaction_id?: string
+          buyer_id?: string
+          seller_id?: string
+          post_id?: string | null
+          amount?: number
+          currency?: string
+          status?: string
+          payment_method?: string
+          upi_id?: string | null
+          upi_qr_data?: string | null
+          payment_proof_url?: string | null
+          payment_verified_at?: string | null
+          work_description?: string | null
+          work_files?: string[] | null
+          work_preview_url?: string | null
+          buyer_approval?: boolean
+          buyer_approval_at?: string | null
+          buyer_feedback?: string | null
+          dispute_reason?: string | null
+          dispute_resolved_at?: string | null
+          released_at?: string | null
+          expires_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transactions_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          }
+        ]
       }
     }
     Views: {
