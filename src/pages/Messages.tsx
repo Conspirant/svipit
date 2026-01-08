@@ -248,6 +248,13 @@ export default function Messages() {
               ...existing,
               other_user: profile
             });
+
+            // Add to conversations list if not present to prevent retries
+            setConversations(prev => {
+              if (prev.some(c => c.id === existing.id)) return prev;
+              const existingWithProfile = { ...existing, other_user: profile };
+              return [existingWithProfile, ...prev];
+            });
           }
         } else {
           throw error;
