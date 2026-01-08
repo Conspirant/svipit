@@ -43,15 +43,21 @@ interface Transaction {
   transaction_id: string;
   status: TransactionStatus;
   amount: number;
-  upi_id: string;
-  upi_qr_data: string;
+  upi_id: string | null;
+  upi_qr_data: string | null;
   payment_proof_url: string | null;
   work_preview_url: string | null;
   work_files: string[] | null;
   buyer_approval: boolean;
-  expires_at: string;
-  buyer_id?: string;
-  seller_id?: string;
+  buyer_approval_at: string | null;
+  buyer_feedback: string | null;
+  dispute_reason: string | null;
+  released_at: string | null;
+  expires_at: string | null;
+  buyer_id: string;
+  seller_id: string;
+  post_id: string | null;
+  created_at: string;
 }
 
 export const TransactionFlow = ({
@@ -201,7 +207,7 @@ export const TransactionFlow = ({
             .eq('user_id', user.id)
             .maybeSingle();
 
-          if (!error && !data?.upi_id) {
+          if (!error && !(data as any)?.upi_id) {
             toast({
               title: "Payout Details Missing",
               description: "You haven't set up your UPI ID for payouts yet. Please make sure to add it to your profile.",
@@ -308,6 +314,17 @@ export const TransactionFlow = ({
               upi_qr_data: upiPaymentString,
               buyer_id: user.id,
               seller_id: sellerId,
+              post_id: postId || null,
+              created_at: new Date().toISOString(),
+              expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+              payment_proof_url: null,
+              work_preview_url: null,
+              work_files: null,
+              buyer_approval: false,
+              buyer_approval_at: null,
+              buyer_feedback: null,
+              dispute_reason: null,
+              released_at: null,
             };
           } else {
             throw error;
@@ -328,6 +345,17 @@ export const TransactionFlow = ({
             upi_qr_data: upiPaymentString,
             buyer_id: user.id,
             seller_id: sellerId,
+            post_id: postId || null,
+            created_at: new Date().toISOString(),
+            expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+            payment_proof_url: null,
+            work_preview_url: null,
+            work_files: null,
+            buyer_approval: false,
+            buyer_approval_at: null,
+            buyer_feedback: null,
+            dispute_reason: null,
+            released_at: null,
           };
         } else {
           // Show user-friendly error
@@ -347,6 +375,17 @@ export const TransactionFlow = ({
             upi_qr_data: upiPaymentString,
             buyer_id: user.id,
             seller_id: sellerId,
+            post_id: postId || null,
+            created_at: new Date().toISOString(),
+            expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+            payment_proof_url: null,
+            work_preview_url: null,
+            work_files: null,
+            buyer_approval: false,
+            buyer_approval_at: null,
+            buyer_feedback: null,
+            dispute_reason: null,
+            released_at: null,
           };
         }
       }
@@ -535,7 +574,7 @@ export const TransactionFlow = ({
     }, 3000); // Poll every 3 seconds
 
     return () => clearInterval(pollInterval);
-  }, [transaction, step, onComplete]);
+  }, [transaction, step, onComplete, isBuyer, isSeller]);
 
   return (
     <div className="w-full max-w-2xl mx-auto">
