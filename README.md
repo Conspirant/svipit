@@ -254,20 +254,6 @@ s.v.i.p-connect/
 
 ---
 
-## 📸 Screenshots
-
-> *Add screenshots of your application here*
-
-| Landing Page | Dashboard | Chat Interface |
-|:------------:|:---------:|:--------------:|
-| ![Landing](public/screenshots/landing.png) | ![Dashboard](public/screenshots/dashboard.png) | ![Chat](public/screenshots/chat.png) |
-
-| Profile | Transaction Flow | Payment QR |
-|:-------:|:----------------:|:----------:|
-| ![Profile](public/screenshots/profile.png) | ![Transaction](public/screenshots/transaction.png) | ![QR](public/screenshots/qr.png) |
-
----
-
 ## 🔮 Future Enhancements
 
 - [ ] **Mobile App**: React Native version for iOS and Android
@@ -278,16 +264,6 @@ s.v.i.p-connect/
 - [ ] **Multi-Institution Support**: Expand beyond single college
 - [ ] **Skill Certification**: Verified skill badges
 - [ ] **Analytics Dashboard**: Insights for users on their transactions
-
----
-
-## 👥 Team
-
-| Name | Role | Contribution |
-|------|------|--------------|
-| *Your Name* | Full Stack Developer | UI/UX, Frontend, Backend Integration |
-| *Team Member 2* | Backend Developer | Database Design, API Development |
-| *Team Member 3* | Designer | UI/UX Design, Branding |
 
 ---
 
